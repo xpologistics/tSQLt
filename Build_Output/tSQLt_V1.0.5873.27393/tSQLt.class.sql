@@ -3003,6 +3003,7 @@ BEGIN
                      AND index_columns.column_id = columns.column_id
                    WHERE key_constraints.unique_index_id = index_columns.index_id
                      AND key_constraints.parent_object_id = index_columns.object_id
+				ORDER BY index_columns.key_ordinal
                      FOR XML PATH(''),TYPE
                 ).value('.','NVARCHAR(MAX)'),
                 1,
