@@ -181,6 +181,7 @@ BEGIN
                      AND index_columns.column_id = columns.column_id
                    WHERE indexes.index_id = index_columns.index_id
                      AND indexes.object_id = index_columns.object_id
+                     AND index_columns.is_included_column = 0
                      FOR XML PATH(''),TYPE
                 ).value('.','NVARCHAR(MAX)'),
                 1,
@@ -188,6 +189,26 @@ BEGIN
                 ''
                )
          +')' 
+		 /*
+		 +ISNULL(NULLIF(
+		 'INCLUDE (' +
+		 STUFF((
+		         SELECT ','+QUOTENAME(columns.name)
+		           FROM sys.index_columns 
+		           JOIN sys.columns
+		             ON index_columns.object_id = columns.object_id
+		            AND index_columns.column_id = columns.column_id
+                  WHERE indexes.index_id = index_columns.index_id
+                    AND indexes.object_id = index_columns.object_id
+		 			AND index_columns.is_included_column = 1
+		            FOR XML PATH(''),TYPE
+		       ).value('.','NVARCHAR(MAX)'),
+		       1,
+		       1,
+		       ''
+		      ) +
+		 ') ', 'INCLUDE () '),'') + 
+		 */
          +ISNULL(' WHERE ' + indexes.filter_definition,'') 
     FROM sys.indexes
     JOIN @Constraints Constraints
