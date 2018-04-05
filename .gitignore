@@ -16,3 +16,7 @@ obj
 *.dbmdl
 *.jfm
 
+DBProject/.vs/_tSQLt/v15/.suo
+DBProject/_tSQLt.sqlproj
+DBProject/_tSQLt.sqlproj.user
+DBProject/_tSQLt.dacpac

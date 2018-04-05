@@ -18,6 +18,7 @@ RETURN
            WHERE indexes.object_id = @TableObjectId
              AND indexes.is_unique_constraint = 0
              AND indexes.is_primary_key = 0
+			 AND indexes.type_desc != 'HEAP'
         ) constraints
    ORDER BY CASE ConstraintType 
                  WHEN 'PRIMARY_KEY_CONSTRAINT' THEN '1'
