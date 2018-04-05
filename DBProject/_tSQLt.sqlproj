@@ -228,6 +228,7 @@
     <Build Include="Security\tSQLt.sql" />
     <Build Include="Security\tSQLtExternalAccessKey.sql" />
     <Build Include="Assemblies\tSQLtCLR.sql" />
+    <Build Include="tSQLt\Stored Procedures\Private_UnFakeTable.sql" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
