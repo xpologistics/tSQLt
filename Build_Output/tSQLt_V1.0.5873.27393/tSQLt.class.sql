@@ -1389,8 +1389,7 @@ BEGIN
 				)
 	  SET TRANSACTION ISOLATION LEVEL SNAPSHOT;
 
-    BEGIN TRAN;
-    SAVE TRAN @TranName;
+    BEGIN TRAN @TranName;
 
     SET @PreExecTrancount = @@TRANCOUNT;
     
