@@ -108,7 +108,7 @@ BEGIN
 					@level0type = N'SCHEMA', @level0name = @UnquotedSchemaName, 
 					@level1type = N'TABLE',  @level1name = @NewName;
 
-		EXEC ('DROP TABLE ' + @NewName);
+		EXEC ('DROP TABLE [' + @UnquotedSchemaName + '].[' + @NewName + ']');
 
 		EXEC sp_rename 
 			@objname = @ObjectName, 
