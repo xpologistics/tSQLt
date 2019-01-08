@@ -3314,7 +3314,7 @@ BEGIN
 			BREAK;
 
 		SET @UnquotedSchemaName = OBJECT_SCHEMA_NAME(OBJECT_ID(@SchemaName+'.'+@ObjectName));
-		SET @UnquotedTableName = OBJECT_NAME(OBJECT_ID(@ObjectName));
+		SET @UnquotedTableName = OBJECT_NAME(OBJECT_ID(@SchemaName+'.'+@ObjectName));
 		SET @NewName = PARSENAME(@NewName, 1)
 		SET	@ObjectName = PARSENAME(@UnquotedSchemaName + '.' + @UnquotedTableName, 1);
 
@@ -3331,6 +3331,8 @@ BEGIN
 					@level1type = N'TABLE',  @level1name = @NewName;
 
 		EXEC ('DROP TABLE [' + @UnquotedSchemaName + '].[' + @NewName + ']');
+
+		SET @ObjectName = @UnquotedSchemaName + '.' + @ObjectName;
 
 		EXEC sp_rename 
 			@objname = @ObjectName, 
@@ -3350,6 +3352,7 @@ BEGIN
 
 END
 GO
+
 
 CREATE PROCEDURE tSQLt.Private_CreateProcedureSpy
     @ProcedureObjectId INT,
