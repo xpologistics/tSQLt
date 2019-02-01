@@ -44,7 +44,8 @@ GO
 CREATE PROCEDURE tSQLt.Private_CreateFakeCloneOfTable
   @SchemaName NVARCHAR(MAX),
   @TableName NVARCHAR(MAX),
-  @OrigTableFullName NVARCHAR(MAX)
+  @OrigTableFullName NVARCHAR(MAX),
+  @CloneNoFK BIT
 AS
 BEGIN
    DECLARE @name		SYSNAME;
@@ -123,6 +124,7 @@ BEGIN
                      AND index_columns.column_id = columns.column_id
                    WHERE key_constraints.unique_index_id = index_columns.index_id
                      AND key_constraints.parent_object_id = index_columns.object_id
+				ORDER BY index_columns.key_ordinal
                      FOR XML PATH(''),TYPE
                 ).value('.','NVARCHAR(MAX)'),
                 1,
@@ -175,7 +177,8 @@ BEGIN
     CROSS
     APPLY tSQLt.Private_GetForeignKeyParColumns(foreign_keys.object_id) AS parCol
     CROSS
-    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol;
+    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol
+	WHERE @CloneNoFK != 1;
 
   UPDATE Constraints
      SET sql =
@@ -206,7 +209,8 @@ BEGIN
     CROSS
     APPLY tSQLt.Private_GetForeignKeyParColumns(foreign_keys.object_id) AS parCol
     CROSS
-    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol;
+    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol
+	WHERE @CloneNoFK != 1;
 
   UPDATE Constraints
      SET sql =
@@ -223,6 +227,7 @@ BEGIN
                      AND index_columns.column_id = columns.column_id
                    WHERE indexes.index_id = index_columns.index_id
                      AND indexes.object_id = index_columns.object_id
+                     AND index_columns.is_included_column = 0
                      FOR XML PATH(''),TYPE
                 ).value('.','NVARCHAR(MAX)'),
                 1,
