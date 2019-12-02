@@ -2925,7 +2925,8 @@ GO
 CREATE PROCEDURE tSQLt.Private_CreateFakeCloneOfTable
   @SchemaName NVARCHAR(MAX),
   @TableName NVARCHAR(MAX),
-  @OrigTableFullName NVARCHAR(MAX)
+  @OrigTableFullName NVARCHAR(MAX),
+  @CloneNoFK BIT
 AS
 BEGIN
    DECLARE @name		SYSNAME;
@@ -3057,7 +3058,8 @@ BEGIN
     CROSS
     APPLY tSQLt.Private_GetForeignKeyParColumns(foreign_keys.object_id) AS parCol
     CROSS
-    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol;
+    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol
+	WHERE @CloneNoFK != 1;
 
   UPDATE Constraints
      SET sql =
@@ -3088,7 +3090,8 @@ BEGIN
     CROSS
     APPLY tSQLt.Private_GetForeignKeyParColumns(foreign_keys.object_id) AS parCol
     CROSS
-    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol;
+    APPLY tSQLt.Private_GetForeignKeyRefColumns(foreign_keys.object_id) AS refCol
+	WHERE @CloneNoFK != 1;
 
   UPDATE Constraints
      SET sql =
@@ -3113,26 +3116,6 @@ BEGIN
                 ''
                )
          +')' 
-		 /*
-		 +ISNULL(NULLIF(
-		 'INCLUDE (' +
-		 STUFF((
-		         SELECT ','+QUOTENAME(columns.name)
-		           FROM sys.index_columns 
-		           JOIN sys.columns
-		             ON index_columns.object_id = columns.object_id
-		            AND index_columns.column_id = columns.column_id
-                  WHERE indexes.index_id = index_columns.index_id
-                    AND indexes.object_id = index_columns.object_id
-		 			AND index_columns.is_included_column = 1
-		            FOR XML PATH(''),TYPE
-		       ).value('.','NVARCHAR(MAX)'),
-		       1,
-		       1,
-		       ''
-		      ) +
-		 ') ', 'INCLUDE () '),'') + 
-		 */
          +ISNULL(' WHERE ' + indexes.filter_definition,'') 
     FROM sys.indexes
     JOIN @Constraints Constraints
@@ -3229,7 +3212,8 @@ CREATE PROCEDURE tSQLt.FakeTable
     @Identity BIT = NULL,
     @ComputedColumns BIT = NULL,
     @Defaults BIT = NULL,
-    @Clone BIT = 0
+    @Clone BIT = 0,
+	@CloneNoFK BIT = 0
 AS
 BEGIN
    DECLARE @OrigSchemaName NVARCHAR(MAX);
@@ -3270,8 +3254,8 @@ BEGIN
      SET @OrigTableFullName = @SchemaName + '.' + @NewNameOfOriginalTable;
    END;
 
-   IF (@Clone = 1)
-     EXEC tSQLt.Private_CreateFakeCloneOfTable @SchemaName, @TableName, @OrigTableFullName;
+   IF (@Clone = 1 OR @CloneNoFK = 1)
+     EXEC tSQLt.Private_CreateFakeCloneOfTable @SchemaName, @TableName, @OrigTableFullName, @CloneNoFK;
    ELSE
      EXEC tSQLt.Private_CreateFakeOfTable @SchemaName, @TableName, @OrigTableFullName, @Identity, @ComputedColumns, @Defaults;
 

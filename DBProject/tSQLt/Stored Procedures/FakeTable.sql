@@ -5,7 +5,8 @@ CREATE PROCEDURE tSQLt.FakeTable
     @Identity BIT = NULL,
     @ComputedColumns BIT = NULL,
     @Defaults BIT = NULL,
-    @Clone BIT = 0
+    @Clone BIT = 0,
+	@CloneNoFK BIT = 0
 AS
 BEGIN
    DECLARE @OrigSchemaName NVARCHAR(MAX);
@@ -46,8 +47,8 @@ BEGIN
      SET @OrigTableFullName = @SchemaName + '.' + @NewNameOfOriginalTable;
    END;
 
-   IF (@Clone = 1)
-     EXEC tSQLt.Private_CreateFakeCloneOfTable @SchemaName, @TableName, @OrigTableFullName;
+   IF (@Clone = 1 OR @CloneNoFK = 1)
+     EXEC tSQLt.Private_CreateFakeCloneOfTable @SchemaName, @TableName, @OrigTableFullName, @CloneNoFK;
    ELSE
      EXEC tSQLt.Private_CreateFakeOfTable @SchemaName, @TableName, @OrigTableFullName, @Identity, @ComputedColumns, @Defaults;
 
